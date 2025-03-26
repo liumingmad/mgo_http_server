@@ -29,4 +29,9 @@ public class UserController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(ResponseMessage.success(usernames));
     }
+
+    @GetMapping("/logout")
+    public ResponseEntity<ResponseMessage<String>> logout() {
+        return ResponseEntity.ok(ResponseMessage.success("Logout successfully!"));
+    }
 } 
