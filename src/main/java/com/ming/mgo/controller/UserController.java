@@ -1,5 +1,6 @@
 package com.ming.mgo.controller;
 
+import com.ming.mgo.dto.ResponseMessage;
 import com.ming.mgo.entity.User;
 import com.ming.mgo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +22,11 @@ public class UserController {
 
     @GetMapping("/usernames")
     @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
-    public ResponseEntity<List<String>> getAllUsernames() {
+    public ResponseEntity<ResponseMessage<List<String>>> getAllUsernames() {
         List<User> users = userService.getAllUsers();
         List<String> usernames = users.stream()
                 .map(User::getUsername)
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(usernames);
+        return ResponseEntity.ok(ResponseMessage.success(usernames));
     }
 } 
