@@ -1,5 +1,6 @@
 package com.ming.mgo.controller;
 
+import com.ming.mgo.annotation.LogPrint;
 import com.ming.mgo.dto.AuthResponse;
 import com.ming.mgo.dto.LoginRequest;
 import com.ming.mgo.dto.RegisterRequest;
@@ -18,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping({"/api/auth", ""})  // 支持 /api/auth 和根路径
 public class AuthController {
 
     @Autowired
@@ -41,6 +42,7 @@ public class AuthController {
         return ResponseEntity.ok(new AuthResponse(jwt));
     }
 
+    @LogPrint
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
         User user = new User();
