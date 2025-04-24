@@ -2,6 +2,8 @@ package com.ming.mgo.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -32,4 +34,8 @@ public class User {
     @NotBlank
     @Size(max = 20)
     private String role = "USER";
+
+    @Min(-18)
+    @Max(9)
+    private Integer level;
 } 
