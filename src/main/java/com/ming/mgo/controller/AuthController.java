@@ -59,9 +59,13 @@ public class AuthController {
         user.setEmail(registerRequest.getEmail());
         user.setPassword(registerRequest.getPassword());
 
-        User registeredUser = userService.registerUser(user);
-        if (registeredUser == null) {
-            return ResponseEntity.ok(ResponseMessage.error(400, "User registered failed!"));
+        try {
+            User registeredUser = userService.registerUser(user);
+            if (registeredUser == null) {
+                return ResponseEntity.ok(ResponseMessage.error(400, "User registered failed!"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.ok(ResponseMessage.error(400, e.getMessage()));
         }
 
         return ResponseEntity.ok(ResponseMessage.success("User registered successfully!"));
