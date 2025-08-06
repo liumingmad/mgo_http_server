@@ -133,6 +133,20 @@ jobs:
           mkdir -p /home/ming/mgo-app
           cd /home/ming/mgo-app
           
+          # 检查并安装docker-compose（如果需要）
+          if ! command -v "docker compose" &> /dev/null && ! command -v docker-compose &> /dev/null; then
+            echo "Installing docker-compose..."
+            sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+          fi
+          
+          # 确定使用哪个compose命令
+          if command -v "docker compose" &> /dev/null; then
+            COMPOSE_CMD="docker compose"
+          else
+            COMPOSE_CMD="docker-compose"
+          fi
+          
           # 创建生产环境docker-compose配置
           cat > docker-compose.prod.yml << 'EOF'
           version: '3.8'
@@ -173,7 +187,7 @@ jobs:
           EOF
           
           # 停止现有服务
-          docker-compose -f docker-compose.prod.yml down || true
+          $COMPOSE_CMD -f docker-compose.prod.yml down || true
           
           # 登录阿里云镜像仓库
           echo "${{ secrets.ALIYUN_REGISTRY_PASSWORD }}" | docker login --username ${{ secrets.ALIYUN_REGISTRY_USERNAME }} --password-stdin ${{ env.REGISTRY }}
@@ -182,13 +196,13 @@ jobs:
           docker pull ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.IMAGE_NAME }}:latest
           
           # 启动服务
-          docker-compose -f docker-compose.prod.yml up -d
+          $COMPOSE_CMD -f docker-compose.prod.yml up -d
           
           # 清理未使用的镜像
           docker image prune -f
           
           # 查看服务状态
-          docker-compose -f docker-compose.prod.yml ps
+          $COMPOSE_CMD -f docker-compose.prod.yml ps
           
           # 登出 Docker registry
           docker logout ${{ env.REGISTRY }}
