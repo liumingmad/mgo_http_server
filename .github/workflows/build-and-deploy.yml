@@ -134,18 +134,19 @@ jobs:
           cd /home/ming/mgo-app
           
           # 检查并安装docker-compose（如果需要）
-          if ! command -v "docker compose" &> /dev/null && ! command -v docker-compose &> /dev/null; then
-            echo "Installing docker-compose..."
-            sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-            sudo chmod +x /usr/local/bin/docker-compose
-          fi
+          # if ! command -v "docker compose" &> /dev/null && ! command -v docker-compose &> /dev/null; then
+          #   echo "Installing docker-compose..."
+          #   sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          #   sudo chmod +x /usr/local/bin/docker-compose
+          # fi
           
           # 确定使用哪个compose命令
-          if command -v "docker compose" &> /dev/null; then
-            COMPOSE_CMD="docker compose"
-          else
-            COMPOSE_CMD="docker-compose"
-          fi
+          # if command -v "docker compose" &> /dev/null; then
+          #   COMPOSE_CMD="docker compose"
+          # else
+          #   COMPOSE_CMD="docker-compose"
+          # fi
+          COMPOSE_CMD="docker compose"
           
           # 创建生产环境docker-compose配置
           cat > docker-compose.prod.yml << 'EOF'
