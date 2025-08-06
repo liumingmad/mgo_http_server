@@ -33,9 +33,18 @@ jobs:
         path: |
           ~/.gradle/caches
           ~/.gradle/wrapper
+          ~/.gradle/build-cache
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
         restore-keys: |
           ${{ runner.os }}-gradle-
+          
+    - name: Cache Maven packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/build.gradle') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
           
     - name: Make gradlew executable
       run: chmod +x ./gradlew
@@ -55,14 +64,24 @@ jobs:
         done
         
     - name: Run tests
-      run: ./gradlew test
+      run: ./gradlew test --build-cache --parallel --daemon
       
+    - name: Cache test results
+      uses: actions/cache@v4
+      with:
+        path: |
+          build/test-results
+          build/reports/tests
+        key: ${{ runner.os }}-test-results-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-test-results-
+          
     - name: Stop MySQL
       run: docker stop test-mysql && docker rm test-mysql
       if: always()
       
     - name: Build application
-      run: ./gradlew bootJar
+      run: ./gradlew bootJar --build-cache --parallel --daemon
       
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -93,8 +112,12 @@ jobs:
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+        cache-from: |
+          type=gha
+          type=registry,ref=${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.IMAGE_NAME }}:buildcache
+        cache-to: |
+          type=gha,mode=max
+          type=registry,ref=${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
         platforms: linux/amd64
         
     - name: Print image info
