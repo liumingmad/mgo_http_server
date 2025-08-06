@@ -112,12 +112,8 @@ jobs:
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        cache-from: |
-          type=gha
-          type=registry,ref=${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.IMAGE_NAME }}:buildcache
-        cache-to: |
-          type=gha,mode=max
-          type=registry,ref=${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
         platforms: linux/amd64
         
     - name: Print image info
@@ -179,11 +175,20 @@ jobs:
           # 停止现有服务
           docker-compose -f docker-compose.prod.yml down || true
           
+          # 登录阿里云镜像仓库
+          echo "${{ secrets.ALIYUN_REGISTRY_PASSWORD }}" | docker login --username ${{ secrets.ALIYUN_REGISTRY_USERNAME }} --password-stdin ${{ env.REGISTRY }}
+          
           # 拉取最新镜像
           docker pull ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.IMAGE_NAME }}:latest
           
           # 启动服务
           docker-compose -f docker-compose.prod.yml up -d
           
+          # 清理未使用的镜像
+          docker image prune -f
+          
           # 查看服务状态
           docker-compose -f docker-compose.prod.yml ps
+          
+          # 登出 Docker registry
+          docker logout ${{ env.REGISTRY }}
